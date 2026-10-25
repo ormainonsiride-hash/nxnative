@@ -1,0 +1,37 @@
+name: nxnative iOS Build Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ios-test:
+    name: Test compilazione iOS
+    runs-on: macos-26
+    timeout-minutes: 40
+
+    steps:
+      - name: Scarica nxnative
+        uses: actions/checkout@v4
+
+      - name: Controlla ambiente macOS
+        run: |
+          sw_vers
+          xcodebuild -version
+          df -h .
+
+      - name: Installa XcodeGen
+        run: |
+          command -v xcodegen || brew install xcodegen
+
+      - name: Compila applicazione iOS di prova
+        run: |
+          python3 dm/ios/tools/build_smoke.py --output "$RUNNER_TEMP/ios-smoke"
+
+      - name: Verifica file generati
+        run: |
+          echo "Contenuto della cartella di compilazione:"
+          du -sh "$RUNNER_TEMP/ios-smoke"
+          find "$RUNNER_TEMP/ios-smoke" -maxdepth 3 -type d
